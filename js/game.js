@@ -80,7 +80,7 @@
     const byLevel = {};
     POOL.forEach(l => { byLevel[l.difficulty] = (byLevel[l.difficulty] || 0) + 1; });
     el.poolNote.textContent = POOL.length
-      ? `${POOL.length} pictures in the pool · ${S.RESET_AFTER_PLAYS - S.getPlays()} games until pictures repeat`
+      ? `${POOL.length} pictures in the pool · ${S.getSeen().length} already seen on this device (a level repeats only once all of it has been shown)`
       : 'No pictures yet: run tools/build_candidates.py first.';
     const style = S.getMapStyle();
     el.styleRadios.forEach(r => { r.checked = r.value === style; });
@@ -151,7 +151,7 @@
     view.setLocked(true);
     const total = game.score;
     const isBest = S.submitScore(total);
-    const reset = S.finishGame();
+    S.finishGame();
     el.summaryRows.innerHTML = game.rounds.map((r, i) => `
       <tr>
         <td>${i + 1}</td>
@@ -163,7 +163,6 @@
     if (isBest) notes.push('New best score!');
     const best = S.getBest();
     if (!isBest && best !== null) notes.push(`Best: ${fmtKm(best)} km`);
-    if (reset) notes.push('Picture memory reset: everything can appear again.');
     el.summaryNote.textContent = notes.join(' ');
     el.summary.hidden = false;
   }
