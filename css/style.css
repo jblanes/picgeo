@@ -129,6 +129,10 @@ body.viewer-open #app { visibility: hidden; } /* nothing underneath can take a s
 .result-km { font-size: 34px; font-weight: 800; color: var(--accent); line-height: 1.1; }
 .result-name { font-weight: 700; font-size: 17px; }
 .result-place { color: var(--muted); }
+.result-desc { margin: 4px 0 0; font-size: 14px; line-height: 1.4; color: #c9d2e0; }
+.result-desc[hidden] { display: none; }
+.result-total { color: var(--muted); font-size: 14px; }
+.result-total span { color: var(--text); font-weight: 600; }
 #result[hidden], #instructions[hidden] { display: none; }
 #next-btn { margin-top: 8px; }
 

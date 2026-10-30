@@ -15,6 +15,7 @@
     photo: $('#photo'), credit: $('#credit'), photoBox: $('#photo-box'),
     hints: document.querySelectorAll('button.hint'), hintOut: $('#hint-output'),
     result: $('#result'), resultKm: $('#result-km'), resultName: $('#result-name'), resultPlace: $('#result-place'),
+    resultDesc: $('#result-desc'), resultTotal: $('#result-total'),
     next: $('#next-btn'), instructions: $('#instructions'),
     styleButtons: document.querySelectorAll('#map-style button'),
     summaryRows: $('#summary-rows'), summaryTotal: $('#summary-total'), summaryNote: $('#summary-note'),
@@ -134,6 +135,9 @@
     el.resultKm.textContent = fmtKm(km);
     el.resultName.textContent = cur.name;
     el.resultPlace.textContent = cur.place;
+    el.resultDesc.textContent = cur.desc || '';
+    el.resultDesc.hidden = !cur.desc;
+    el.resultTotal.textContent = `${fmtKm(game.score)} km`;
     el.scoreLabel.textContent = `${fmtKm(game.score)} km`;
     el.result.hidden = false;
     el.instructions.hidden = true;
