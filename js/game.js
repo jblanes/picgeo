@@ -14,7 +14,7 @@
   const I18N = {
     en: {
       intro1: 'A picture of a place somewhere on Earth. Press and hold on the globe where you think it is. Every kilometre you are off is added to your score. Ten rounds, from easy to very hard. <strong>Lowest score wins.</strong>',
-      intro2: 'Four hints per game, each usable once: zoom to the country, the name of the place, the flag, or the exact spot. Once per game you can also cap a round at 1,000 km.',
+      intro2: 'Four hints per game, each usable once: zoom to the country, the name of the place, the flag, or the exact spot. Once per game, after a bad round, you can cap it at 1,000 km.',
       modeDaily: 'Daily game', modeFree: 'Free play',
       modeHelp: 'Daily: everyone gets the same ten places today, so totals can be compared. Free play: random places you have not seen yet.',
       dailyDone: "Today's daily game is done: {km} km. Come back tomorrow.",
@@ -26,10 +26,9 @@
       statsLevels: 'Best round per level: {list}',
       statsSeen: '{seen} of {total} pictures seen on this device',
       round: 'Round {r} / {n} · level {d}',
-      hintCountry: '🌍 Country', hintName: '🏷️ Name', hintFlag: '🚩 Flag', hintExact: '📍 Exact', cap: '🛡️ Cap 1,000',
+      hintCountry: '🌍 Country', hintName: '🏷️ Name', hintFlag: '🚩 Flag', hintExact: '📍 Exact', cap: '🛡️ Cap this round at 1,000 km',
       hintCountryT: 'Zoom the globe to the country', hintNameT: 'Show the name of the place', hintFlagT: "Show the country's flag", hintExactT: 'Mark the exact location',
-      capT: 'Once per game: this round counts at most 1,000 km',
-      capOn: 'This round counts at most 1,000 km.',
+      capT: 'Once per game',
       instructions: 'Press and <strong>hold for a second</strong> on the globe to place your guess. Drag to rotate, pinch or scroll to zoom.',
       countryOut: 'The country is highlighted on the globe.',
       noFlag: 'No flag for this one. Country: {c}',
@@ -41,13 +40,14 @@
       dailyOf: 'Daily game of {date}', freePlay: 'Free play',
       share: 'Share result', shared: 'Copied to the clipboard.',
       again: 'Play again', menu: 'Menu',
+      whereIsThis: 'Where is this?', findIt: 'Find it on the globe',
       photoAlt: 'Where is this?', photo: 'Photo:', photoTitle: 'Tap to see the picture full screen again; pinch or scroll to zoom',
       noPictures: 'No pictures yet: run tools/build_candidates.py first.',
       km: 'km',
     },
     es: {
       intro1: 'Una foto de un lugar del mundo. Mantén pulsado el globo donde creas que está. Cada kilómetro de error se suma a tu puntuación. Diez rondas, de fácil a muy difícil. <strong>Gana la puntuación más baja.</strong>',
-      intro2: 'Cuatro pistas por partida, cada una una sola vez: acercar al país, el nombre del lugar, la bandera o el punto exacto. Una vez por partida puedes además limitar una ronda a 1.000 km.',
+      intro2: 'Cuatro pistas por partida, cada una una sola vez: acercar al país, el nombre del lugar, la bandera o el punto exacto. Una vez por partida, tras una ronda mala, puedes limitarla a 1.000 km.',
       modeDaily: 'Partida del día', modeFree: 'Partida libre',
       modeHelp: 'Del día: hoy todos reciben los mismos diez lugares, así se comparan los totales. Libre: lugares al azar que aún no has visto.',
       dailyDone: 'La partida de hoy ya está hecha: {km} km. Vuelve mañana.',
@@ -59,10 +59,9 @@
       statsLevels: 'Mejor ronda por nivel: {list}',
       statsSeen: '{seen} de {total} fotos vistas en este dispositivo',
       round: 'Ronda {r} / {n} · nivel {d}',
-      hintCountry: '🌍 País', hintName: '🏷️ Nombre', hintFlag: '🚩 Bandera', hintExact: '📍 Exacto', cap: '🛡️ Tope 1.000',
+      hintCountry: '🌍 País', hintName: '🏷️ Nombre', hintFlag: '🚩 Bandera', hintExact: '📍 Exacto', cap: '🛡️ Limitar esta ronda a 1.000 km',
       hintCountryT: 'Acercar el globo al país', hintNameT: 'Mostrar el nombre del lugar', hintFlagT: 'Mostrar la bandera del país', hintExactT: 'Marcar el punto exacto',
-      capT: 'Una vez por partida: esta ronda cuenta como máximo 1.000 km',
-      capOn: 'Esta ronda cuenta como máximo 1.000 km.',
+      capT: 'Una vez por partida',
       instructions: '<strong>Mantén pulsado un segundo</strong> el globo para situar tu respuesta. Arrastra para girar, pellizca o usa la rueda para acercar.',
       countryOut: 'El país está resaltado en el globo.',
       noFlag: 'No hay bandera para este. País: {c}',
@@ -74,6 +73,7 @@
       dailyOf: 'Partida del día {date}', freePlay: 'Partida libre',
       share: 'Compartir resultado', shared: 'Copiado al portapapeles.',
       again: 'Jugar otra vez', menu: 'Menú',
+      whereIsThis: '¿Dónde es esto?', findIt: 'Buscarlo en el globo',
       photoAlt: '¿Dónde es esto?', photo: 'Foto:', photoTitle: 'Toca para ver la foto a pantalla completa; pellizca o usa la rueda para acercar',
       noPictures: 'Aún no hay fotos: ejecuta tools/build_candidates.py.',
       km: 'km',
@@ -111,7 +111,7 @@
 
   let view = null;
   let viewer = null; // full-screen photo viewer
-  let game = null;   // { mode, dateKey, round, score, rounds: [], hints: {}, capUsed, capThisRound, current, next, guessed }
+  let game = null;   // { mode, dateKey, round, score, rounds: [], hints: {}, capUsed, current, next, guessed }
 
   // ---- helpers --------------------------------------------------------------
   function haversineKm(a, b) {
@@ -228,18 +228,16 @@
     let mode = Array.from(el.modeRadios).find(r => r.checked)?.value || 'free';
     const dateKey = todayKey();
     if (mode === 'daily' && S.getDaily(dateKey) !== null) mode = 'free';
-    game = { mode, dateKey, round: 0, score: 0, rounds: [], hints: {}, capUsed: false, capThisRound: false,
+    game = { mode, dateKey, round: 0, score: 0, rounds: [], hints: {}, capUsed: false,
              current: null, next: null, guessed: false, daily: mode === 'daily' ? dailyPicks(dateKey) : [] };
     game.next = pictureFor(1);
     el.hints.forEach(b => { b.disabled = false; b.classList.remove('used'); });
-    el.cap.disabled = false; el.cap.classList.remove('used');
     nextRound();
   }
 
   function nextRound() {
     game.round += 1;
     game.guessed = false;
-    game.capThisRound = false;
     game.current = game.next || pictureFor(game.round);
     game.next = null;
     const cur = game.current;
@@ -252,12 +250,13 @@
     el.photo.src = photoUrl(cur);
     el.photo.alt = t('photoAlt');
     el.credit.innerHTML = t('photo') + ' ' + creditHtml(cur);
-    viewer.open(photoUrl(cur), el.credit.innerHTML); // every round starts with the picture full screen; closing it leaves the small copy in the panel
+    // every round starts with the picture full screen and a Continue button; afterwards the small copy in the panel reopens it
+    viewer.open(photoUrl(cur), el.credit.innerHTML, { prompt: { title: t('round', { r: game.round, n: ROUNDS, d: cur.difficulty }), question: t('whereIsThis'), button: t('findIt') } });
     el.hintOut.innerHTML = '';
     el.result.hidden = true;
     el.instructions.hidden = false;
     el.hints.forEach(b => { b.disabled = !!game.hints[b.dataset.hint]; });
-    el.cap.disabled = game.capUsed;
+    el.cap.hidden = true;
   }
 
   function onPick(guess) {
@@ -267,15 +266,15 @@
     view.setLocked(true);
     const cur = game.current;
     const truth = { lat: cur.lat, lng: cur.lng };
-    const rawKm = haversineKm(guess, truth);
-    const km = game.capThisRound ? Math.min(rawKm, CAP_KM) : rawKm;
+    const km = haversineKm(guess, truth);
     game.score += km;
-    game.rounds.push({ landmark: cur, km, rawKm, guess, level: cur.difficulty, capped: km < rawKm });
+    game.rounds.push({ landmark: cur, km, rawKm: km, guess, level: cur.difficulty, capped: false });
 
     view.showResult(guess, truth, nameOf(cur), km);
     el.resultKm.textContent = fmtKm(km);
-    el.resultCap.textContent = km < rawKm ? t('capped', { km: fmtKm(rawKm) }) : '';
-    el.resultCap.hidden = !(km < rawKm);
+    el.resultCap.textContent = '';
+    el.resultCap.hidden = true;
+    el.cap.hidden = game.capUsed || km <= CAP_KM; // offered once per game, after a bad round
     el.resultName.textContent = nameOf(cur);
     el.resultPlace.textContent = cur.place;
     const desc = descOf(cur);
@@ -286,7 +285,6 @@
     el.result.hidden = false;
     el.instructions.hidden = true;
     el.hints.forEach(b => { b.disabled = true; });
-    el.cap.disabled = true;
     el.next.textContent = game.round >= ROUNDS ? t('results') : t('next');
     el.next.focus();
 
@@ -364,17 +362,21 @@
     el.hintOut.appendChild(line);
   }
 
-  /** Once per game: the current round counts at most CAP_KM. */
+  /** Once per game, after the guess: the round just played counts at most CAP_KM. */
   function useCap() {
-    if (!game || game.guessed || game.capUsed) return;
+    if (!game || !game.guessed || game.capUsed) return;
+    const r = game.rounds[game.rounds.length - 1];
+    if (!r || r.km <= CAP_KM) return;
     game.capUsed = true;
-    game.capThisRound = true;
-    el.cap.disabled = true;
-    el.cap.classList.add('used');
-    const line = document.createElement('div');
-    line.className = 'hint-line hint-cap';
-    line.textContent = t('capOn');
-    el.hintOut.appendChild(line);
+    game.score -= r.km - CAP_KM;
+    r.km = CAP_KM;
+    r.capped = true;
+    el.resultKm.textContent = fmtKm(CAP_KM);
+    el.resultCap.textContent = t('capped', { km: fmtKm(r.rawKm) });
+    el.resultCap.hidden = false;
+    el.resultTotal.textContent = `${fmtKm(game.score)} km`;
+    el.scoreLabel.textContent = `${fmtKm(game.score)} km`;
+    el.cap.hidden = true;
   }
 
   function syncStyleButtons() {

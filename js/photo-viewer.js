@@ -10,11 +10,18 @@
     root.innerHTML = `
       <img id="viewer-img" alt="">
       <button id="viewer-close" aria-label="Close">×</button>
+      <div id="viewer-prompt" hidden>
+        <div id="viewer-prompt-title"></div>
+        <div id="viewer-prompt-question"></div>
+        <button id="viewer-go" class="primary big"></button>
+      </div>
       <div id="viewer-caption"></div>`;
     document.body.appendChild(root);
     const img = root.querySelector('#viewer-img');
     const caption = root.querySelector('#viewer-caption');
     const closeBtn = root.querySelector('#viewer-close');
+    const prompt = root.querySelector('#viewer-prompt');
+    const goBtn = root.querySelector('#viewer-go');
 
     let scale = 1, tx = 0, ty = 0;
     const pointers = new Map(); // pointerId -> {x, y}
@@ -39,9 +46,18 @@
       apply();
     }
 
-    function open(src, captionHtml) {
+    /** opts.prompt = {title, question, button}: the pre-round view, with a Continue button instead of the ×. */
+    function open(src, captionHtml, opts) {
       img.src = src;
       caption.innerHTML = captionHtml || '';
+      const p = opts && opts.prompt;
+      prompt.hidden = !p;
+      closeBtn.hidden = !!p;
+      if (p) {
+        prompt.querySelector('#viewer-prompt-title').textContent = p.title || '';
+        prompt.querySelector('#viewer-prompt-question').textContent = p.question || '';
+        goBtn.textContent = p.button || 'Continue';
+      }
       reset();
       root.hidden = false;
       document.body.classList.add('viewer-open');
@@ -53,7 +69,7 @@
     }
 
     root.addEventListener('pointerdown', e => {
-      if (e.target === closeBtn) return;
+      if (e.target === closeBtn || prompt.contains(e.target)) return;
       e.preventDefault();
       root.setPointerCapture(e.pointerId);
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -114,6 +130,7 @@
     }, { passive: false });
     img.addEventListener('dragstart', e => e.preventDefault());
     closeBtn.addEventListener('click', close);
+    goBtn.addEventListener('click', close);
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !root.hidden) close(); });
 
     return { open, close, isOpen: () => !root.hidden };

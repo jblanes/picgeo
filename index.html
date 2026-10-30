@@ -23,7 +23,6 @@
         <button class="hint" data-hint="name" data-i18n="hintName" data-i18n-title="hintNameT">🏷️ Name</button>
         <button class="hint" data-hint="flag" data-i18n="hintFlag" data-i18n-title="hintFlagT">🚩 Flag</button>
         <button class="hint" data-hint="exact" data-i18n="hintExact" data-i18n-title="hintExactT">📍 Exact</button>
-        <button id="cap-btn" class="cap" data-i18n="cap" data-i18n-title="capT">🛡️ Cap 1,000</button>
       </div>
       <div id="hint-output"></div>
     </section>
@@ -34,6 +33,7 @@
       <div class="result-place" id="result-place"></div>
       <p class="result-desc" id="result-desc" hidden></p>
       <div class="result-total"><span data-i18n="totalSoFar">Total so far:</span> <span id="result-total">0 km</span></div>
+      <button id="cap-btn" class="cap" data-i18n="cap" data-i18n-title="capT" hidden>🛡️ Cap this round at 1,000 km</button>
       <div class="row">
         <button id="next-btn" class="primary" data-i18n="next">Next round</button>
         <button id="see-btn" data-i18n="seeIt">👁 See it</button>
@@ -61,7 +61,7 @@
         </label>
       </div>
       <p data-i18n-html="intro1">A picture of a place somewhere on Earth. Press and hold on the globe where you think it is. Every kilometre you are off is added to your score. Ten rounds, from easy to very hard. <strong>Lowest score wins.</strong></p>
-      <p data-i18n="intro2">Four hints per game, each usable once: zoom to the country, the name of the place, the flag, or the exact spot. Once per game you can also cap a round at 1,000 km.</p>
+      <p data-i18n="intro2">Four hints per game, each usable once: zoom to the country, the name of the place, the flag, or the exact spot. Once per game, after a bad round, you can cap it at 1,000 km.</p>
       <div class="choice">
         <label><input type="radio" name="mode" value="daily" checked> <span data-i18n="modeDaily">Daily game</span></label>
         <label><input type="radio" name="mode" value="free"> <span data-i18n="modeFree">Free play</span></label>
