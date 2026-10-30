@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>GeoClick</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <aside id="panel">
+    <header class="panel-head">
+      <div class="brand">GeoClick</div>
+      <div class="status"><span id="round-label">Round 1 / 10</span><span class="sep">·</span><span id="score-label">0 km</span></div>
+    </header>
+
+    <figure id="photo-box" title="Tap to see it full screen; pinch or scroll to zoom">
+      <img id="photo" alt="Where is this?">
+      <figcaption id="credit"></figcaption>
+    </figure>
+
+    <section id="hint-area">
+      <div class="hints">
+        <button class="hint" data-hint="country" title="Zoom the globe to the country">🌍 Country</button>
+        <button class="hint" data-hint="name" title="Show the name of the place">🏷️ Name</button>
+        <button class="hint" data-hint="flag" title="Show the country's flag">🚩 Flag</button>
+        <button class="hint" data-hint="exact" title="Mark the exact location">📍 Exact</button>
+      </div>
+      <div id="hint-output"></div>
+    </section>
+
+    <div id="instructions">Press and <strong>hold for 2 seconds</strong> on the globe to place your guess. Drag to rotate, scroll to zoom.</div>
+
+    <section id="result" hidden>
+      <div class="result-km"><span id="result-km">0</span> km</div>
+      <div class="result-name" id="result-name"></div>
+      <div class="result-place" id="result-place"></div>
+      <button id="next-btn" class="primary">Next round</button>
+    </section>
+  </aside>
+
+  <main id="globe-wrap">
+    <div id="globe"></div>
+    <div id="hold-ring" aria-hidden="true">
+      <svg viewBox="0 0 48 48"><circle class="bg" cx="24" cy="24" r="20"/><circle class="fg" cx="24" cy="24" r="20"/></svg>
+    </div>
+    <div id="map-style">
+      <button data-style="satellite" title="Satellite imagery, sharp down to street level">Satellite</button>
+      <button data-style="political" title="Coloured countries over shaded relief, no names">Political</button>
+    </div>
+    <div id="map-credit"></div>
+  </main>
+
+  <div id="overlay" class="screen">
+    <div class="card">
+      <h1>GeoClick</h1>
+      <p>A picture of a place somewhere on Earth. Press and hold on the globe where you think it is. Every kilometre you are off is added to your score. Ten rounds, from easy to very hard. <strong>Lowest score wins.</strong></p>
+      <p>You get four hints per game, each usable once: zoom to the country, the name of the place, the flag, or the exact spot.</p>
+      <div class="choice">
+        <label><input type="radio" name="mapstyle" value="satellite" checked> Satellite globe</label>
+        <label><input type="radio" name="mapstyle" value="political"> Political globe</label>
+      </div>
+      <p class="muted small">Map tiles stream from the internet and stay sharp when you zoom in.</p>
+      <div id="best" class="muted"></div>
+      <div id="pool-note" class="muted small"></div>
+      <button id="play-btn" class="primary big">Play</button>
+    </div>
+  </div>
+
+  <div id="summary" class="screen" hidden>
+    <div class="card">
+      <h2>Results</h2>
+      <table class="summary-table">
+        <thead><tr><th>#</th><th>Place</th><th class="num">km</th></tr></thead>
+        <tbody id="summary-rows"></tbody>
+      </table>
+      <div class="total">Total <span id="summary-total">0 km</span></div>
+      <div id="summary-note" class="muted"></div>
+      <div class="row">
+        <button id="again-btn" class="primary">Play again</button>
+        <button id="menu-btn">Menu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/globe.gl.min.js"></script>
+<script src="data/countries.js"></script>
+<script src="data/countries_meta.js"></script>
+<script src="data/landmarks.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/globe-view.js"></script>
+<script src="js/photo-viewer.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
