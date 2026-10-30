@@ -113,6 +113,7 @@
     el.photo.src = photoUrl(cur);
     el.photo.alt = 'Where is this?';
     el.credit.innerHTML = 'Photo: ' + creditHtml(cur);
+    viewer.open(photoUrl(cur), el.credit.innerHTML); // every round starts with the picture full screen; closing it leaves the small copy in the panel
     el.hintOut.innerHTML = '';
     el.result.hidden = true;
     el.instructions.hidden = false;
