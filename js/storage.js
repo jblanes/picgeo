@@ -5,6 +5,9 @@ window.GeoStorage = (function () {
     plays: 'geoclick.plays',     // games finished on this device
     best: 'geoclick.best',       // lowest total km
     mapStyle: 'geoclick.mapStyle',
+    lang: 'geoclick.lang',       // 'en' | 'es'
+    stats: 'geoclick.stats',     // { games, sum, bestByLevel: {1..5: km} }
+    daily: 'geoclick.daily',     // { 'YYYY-MM-DD': total km }
   };
   // José's rule (2026-10-30): on one device a picture is never shown again until its whole level has been seen,
   // however many games are played or how often the browser is closed. Only pickFor() in game.js clears a level.
@@ -40,5 +43,32 @@ window.GeoStorage = (function () {
       return s === 'political' ? 'political' : 'satellite';
     },
     setMapStyle(s) { write(KEYS.mapStyle, s); },
+
+    getLang() {
+      const l = read(KEYS.lang, null);
+      if (l === 'en' || l === 'es') return l;
+      return (navigator.language || '').toLowerCase().startsWith('es') ? 'es' : 'en';
+    },
+    setLang(l) { write(KEYS.lang, l); },
+
+    /** Lifetime statistics: games, sum of totals, best (lowest) round per level. */
+    getStats() {
+      const s = read(KEYS.stats, null);
+      return s && typeof s === 'object' ? { games: s.games || 0, sum: s.sum || 0, bestByLevel: s.bestByLevel || {} } : { games: 0, sum: 0, bestByLevel: {} };
+    },
+    recordGame(rounds, total) {
+      const s = this.getStats();
+      s.games += 1;
+      s.sum += total;
+      rounds.forEach(r => {
+        const lvl = r.level;
+        if (s.bestByLevel[lvl] === undefined || r.km < s.bestByLevel[lvl]) s.bestByLevel[lvl] = Math.round(r.km);
+      });
+      write(KEYS.stats, s);
+    },
+
+    /** Daily game: one result per local date. */
+    getDaily(dateKey) { const d = read(KEYS.daily, {}); return d && typeof d[dateKey] === 'number' ? d[dateKey] : null; },
+    setDaily(dateKey, total) { const d = read(KEYS.daily, {}) || {}; d[dateKey] = total; write(KEYS.daily, d); },
   };
 })();

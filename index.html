@@ -13,34 +13,33 @@
       <div class="brand">GeoClick</div>
       <div class="status"><span id="round-label">Round 1 / 10</span><span class="sep">·</span><span id="score-label">0 km</span></div>
     </header>
-
-    <figure id="photo-box" title="Tap to see the picture full screen again; pinch or scroll to zoom">
+    <figure id="photo-box" data-i18n-title="photoTitle" title="Tap to see the picture full screen again; pinch or scroll to zoom">
       <img id="photo" alt="Where is this?">
       <figcaption id="credit"></figcaption>
     </figure>
-
     <section id="hint-area">
       <div class="hints">
-        <button class="hint" data-hint="country" title="Zoom the globe to the country">🌍 Country</button>
-        <button class="hint" data-hint="name" title="Show the name of the place">🏷️ Name</button>
-        <button class="hint" data-hint="flag" title="Show the country's flag">🚩 Flag</button>
-        <button class="hint" data-hint="exact" title="Mark the exact location">📍 Exact</button>
+        <button class="hint" data-hint="country" data-i18n="hintCountry" data-i18n-title="hintCountryT">🌍 Country</button>
+        <button class="hint" data-hint="name" data-i18n="hintName" data-i18n-title="hintNameT">🏷️ Name</button>
+        <button class="hint" data-hint="flag" data-i18n="hintFlag" data-i18n-title="hintFlagT">🚩 Flag</button>
+        <button class="hint" data-hint="exact" data-i18n="hintExact" data-i18n-title="hintExactT">📍 Exact</button>
+        <button id="cap-btn" class="cap" data-i18n="cap" data-i18n-title="capT">🛡️ Cap 1,000</button>
       </div>
       <div id="hint-output"></div>
     </section>
-
-    <div id="instructions">Press and <strong>hold for 2 seconds</strong> on the globe to place your guess. Drag to rotate, scroll to zoom.</div>
-
+    <div id="instructions" data-i18n-html="instructions">Press and <strong>hold for a second</strong> on the globe to place your guess. Drag to rotate, pinch or scroll to zoom.</div>
     <section id="result" hidden>
-      <div class="result-km"><span id="result-km">0</span> km</div>
+      <div class="result-km"><span id="result-km">0</span> km <small id="result-cap" class="result-cap" hidden></small></div>
       <div class="result-name" id="result-name"></div>
       <div class="result-place" id="result-place"></div>
       <p class="result-desc" id="result-desc" hidden></p>
-      <div class="result-total">Total so far: <span id="result-total">0 km</span></div>
-      <button id="next-btn" class="primary">Next round</button>
+      <div class="result-total"><span data-i18n="totalSoFar">Total so far:</span> <span id="result-total">0 km</span></div>
+      <div class="row">
+        <button id="next-btn" class="primary" data-i18n="next">Next round</button>
+        <button id="see-btn" data-i18n="seeIt">👁 See it</button>
+      </div>
     </section>
   </aside>
-
   <main id="globe-wrap">
     <div id="globe"></div>
     <div id="hold-ring" aria-hidden="true">
@@ -55,33 +54,47 @@
 
   <div id="overlay" class="screen">
     <div class="card">
-      <h1>GeoClick</h1>
-      <p>A picture of a place somewhere on Earth. Press and hold on the globe where you think it is. Every kilometre you are off is added to your score. Ten rounds, from easy to very hard. <strong>Lowest score wins.</strong></p>
-      <p>You get four hints per game, each usable once: zoom to the country, the name of the place, the flag, or the exact spot.</p>
-      <div class="choice">
-        <label><input type="radio" name="mapstyle" value="satellite" checked> Satellite globe</label>
-        <label><input type="radio" name="mapstyle" value="political"> Political globe</label>
+      <div class="card-head">
+        <h1>GeoClick</h1>
+        <label class="lang"><span data-i18n="language">Language</span>
+          <select id="lang"><option value="en">English</option><option value="es">Español</option></select>
+        </label>
       </div>
-      <p class="muted small">Map tiles stream from the internet and stay sharp when you zoom in.</p>
-      <div id="best" class="muted"></div>
+      <p data-i18n-html="intro1">A picture of a place somewhere on Earth. Press and hold on the globe where you think it is. Every kilometre you are off is added to your score. Ten rounds, from easy to very hard. <strong>Lowest score wins.</strong></p>
+      <p data-i18n="intro2">Four hints per game, each usable once: zoom to the country, the name of the place, the flag, or the exact spot. Once per game you can also cap a round at 1,000 km.</p>
+      <div class="choice">
+        <label><input type="radio" name="mode" value="daily" checked> <span data-i18n="modeDaily">Daily game</span></label>
+        <label><input type="radio" name="mode" value="free"> <span data-i18n="modeFree">Free play</span></label>
+      </div>
+      <p class="muted small" data-i18n="modeHelp">Daily: everyone gets the same ten places today, so totals can be compared. Free play: random places you have not seen yet.</p>
+      <p id="daily-done" class="daily-done" hidden></p>
+      <div class="choice">
+        <label><input type="radio" name="mapstyle" value="satellite" checked> <span data-i18n="satellite">Satellite globe</span></label>
+        <label><input type="radio" name="mapstyle" value="political"> <span data-i18n="political">Political globe</span></label>
+      </div>
+      <p class="muted small" data-i18n="tiles">Map tiles stream from the internet and stay sharp when you zoom in.</p>
+      <div id="stats" class="stats muted"></div>
       <div id="pool-note" class="muted small"></div>
-      <button id="play-btn" class="primary big">Play</button>
+      <button id="play-btn" class="primary big" data-i18n="play">Play</button>
     </div>
   </div>
 
   <div id="summary" class="screen" hidden>
     <div class="card">
-      <h2>Results</h2>
+      <h2 data-i18n="resultsTitle">Results</h2>
+      <div id="summary-mode" class="muted"></div>
       <table class="summary-table">
-        <thead><tr><th>#</th><th>Place</th><th class="num">km</th></tr></thead>
+        <thead><tr><th>#</th><th data-i18n="thPlace">Place</th><th class="num">km</th></tr></thead>
         <tbody id="summary-rows"></tbody>
       </table>
-      <div class="total">Total <span id="summary-total">0 km</span></div>
+      <div class="total"><span data-i18n="total">Total</span> <span id="summary-total">0 km</span></div>
       <div id="summary-note" class="muted"></div>
       <div class="row">
-        <button id="again-btn" class="primary">Play again</button>
-        <button id="menu-btn">Menu</button>
+        <button id="again-btn" class="primary" data-i18n="again">Play again</button>
+        <button id="share-btn" data-i18n="share">Share result</button>
+        <button id="menu-btn" data-i18n="menu">Menu</button>
       </div>
+      <div id="share-msg" class="muted small share-msg"></div>
     </div>
   </div>
 </div>

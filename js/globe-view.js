@@ -1,7 +1,7 @@
 // Globe.gl wrapper: map styles, hold-to-pick, markers, arc, fly-to.
 window.GlobeView = (function () {
   const ISO_ALIAS = { XKS: 'KOS' }; // Wikidata iso3 -> Natural Earth code
-  const HOLD_MS = 2000;
+  const HOLD_MS = 1200; // José, 2026-10-30: two seconds felt long
   const MOVE_TOLERANCE = 6; // px of drift before a hold is cancelled
 
   function hashHue(str) {
@@ -93,7 +93,7 @@ window.GlobeView = (function () {
     controls.dampingFactor = 0.12;
     controls.rotateSpeed = 0.7;
     controls.zoomSpeed = 0.8;
-    controls.minDistance = 101.5;
+    controls.minDistance = 100.15; // altitude 0.0015: about 10 km above the ground, close enough to see the place itself (See it)
 
     function applyPolygons() {
       if (style === 'political') {
