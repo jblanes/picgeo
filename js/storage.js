@@ -7,7 +7,7 @@ window.GeoStorage = (function () {
     mapStyle: 'geoclick.mapStyle',
     lang: 'geoclick.lang',       // 'en' | 'es'
     stats: 'geoclick.stats',     // { games, sum, bestByLevel: {1..5: km} }
-    daily: 'geoclick.daily',     // { 'YYYY-MM-DD': total km }
+    daily: 'geoclick.daily2',    // { 'YYYY-MM-DD': total km }; '2' = the daily series that started 2026-10-31 (earlier plays do not count)
   };
   // José's rule (2026-10-30): on one device a picture is never shown again until its whole level has been seen,
   // however many games are played or how often the browser is closed. Only pickFor() in game.js clears a level.

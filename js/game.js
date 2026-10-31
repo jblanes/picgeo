@@ -16,7 +16,7 @@
       intro1: 'A picture of a place somewhere on Earth. Press and hold on the globe where you think it is. Every kilometre you are off is added to your score. Five rounds, from easy to very hard. <strong>Lowest score wins.</strong>',
       intro2: 'Two hints per game, each usable once: the name of the place or the flag of its country. Once per game, after a bad round, you can cap it at 1,000 km.',
       modeDaily: 'Daily game', modeFree: 'Free play',
-      modeHelp: 'Daily: everyone gets the same five places today, so totals can be compared. Free play: random places you have not seen yet.',
+      modeHelp: 'Daily: everyone gets the same five places today, so totals can be compared; a place comes back only after all the others of its level have had their day. Free play: random places you have not seen yet.',
       dailyDone: "Today's daily game is done: {km} km. Come back tomorrow.",
       satellite: 'Satellite globe', political: 'Political globe',
       tiles: 'Map tiles stream from the internet and stay sharp when you zoom in.',
@@ -49,7 +49,7 @@
       intro1: 'Una foto de un lugar del mundo. Mantén pulsado el globo donde creas que está. Cada kilómetro de error se suma a tu puntuación. Cinco rondas, de fácil a muy difícil. <strong>Gana la puntuación más baja.</strong>',
       intro2: 'Dos pistas por partida, cada una una sola vez: el nombre del lugar o la bandera de su país. Una vez por partida, tras una ronda mala, puedes limitarla a 1.000 km.',
       modeDaily: 'Partida del día', modeFree: 'Partida libre',
-      modeHelp: 'Del día: hoy todos reciben los mismos cinco lugares, así se comparan los totales. Libre: lugares al azar que aún no has visto.',
+      modeHelp: 'Del día: hoy todos reciben los mismos cinco lugares, así se comparan los totales; un lugar solo vuelve cuando todos los demás de su nivel han tenido su día. Libre: lugares al azar que aún no has visto.',
       dailyDone: 'La partida de hoy ya está hecha: {km} km. Vuelve mañana.',
       satellite: 'Globo satélite', political: 'Globo político',
       tiles: 'Los mapas se descargan de internet y siguen nítidos al acercar.',
@@ -134,14 +134,23 @@
     let a = h >>> 0;
     return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let x = Math.imul(a ^ (a >>> 15), 1 | a); x ^= x + Math.imul(x ^ (x >>> 7), 61 | x); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
   }
-  /** The five places of the daily game: one per level, drawn from the pool sorted by id with the date as seed. */
+  const DAILY_EPOCH = Date.UTC(2026, 9, 31); // 31 Oct 2026 = day 0 of the daily series (José, 2026-10-31: new daily game)
+  const dayIndex = key => { const [y, m, d] = key.split('-').map(Number); return Math.round((Date.UTC(y, m - 1, d) - DAILY_EPOCH) / 86400000); };
+  /** The five places of the daily game, one per level. Each level walks through ALL its places, one per day, in an
+   *  order shuffled per cycle, so a place is the daily one again only after every other place at its level has been
+   *  (José's rule, 2026-10-31). Every device computes the same order. The order is a hash sort by id, so adding a
+   *  place to the pool shifts the walk by one step at most instead of reshuffling it. */
   function dailyPicks(dateKey) {
-    const rand = seeded('geoclick-' + dateKey);
+    const day = dayIndex(dateKey);
     const picks = [];
     for (let lvl = 1; lvl <= LEVELS; lvl++) {
-      const atLevel = POOL.filter(l => l.difficulty === lvl).sort((a, b) => a.id.localeCompare(b.id));
-      if (!atLevel.length) continue;
-      picks.push(atLevel[Math.floor(rand() * atLevel.length)]);
+      const atLevel = POOL.filter(l => l.difficulty === lvl);
+      const n = atLevel.length;
+      if (!n) continue;
+      const cycle = Math.floor(day / n), pos = ((day % n) + n) % n;
+      const order = atLevel.map(l => ({ l, k: seeded(`geoclick-L${lvl}-c${cycle}-${l.id}`)() }))
+        .sort((a, b) => a.k - b.k || a.l.id.localeCompare(b.l.id));
+      picks.push(order[pos].l);
     }
     return picks;
   }
@@ -170,15 +179,26 @@
     return pick;
   }
 
+  /** Where each licence's text lives, so the credit line links to it (checked against Commons, 2026-10-31). */
+  function licenseUrl(name) {
+    const m = /^CC (BY(?:-SA)?|SA) (\d\.\d)(?: ([a-z]{2,3}))?$/.exec(name || '');
+    if (m) return `https://creativecommons.org/licenses/${m[1].toLowerCase()}/${m[2]}/` + (m[3] ? m[3] + '/' : '');
+    if (name === 'CC0') return 'https://creativecommons.org/publicdomain/zero/1.0/';
+    if (/^GFDL/.test(name)) return 'https://www.gnu.org/licenses/old-licenses/fdl-1.2.html';
+    if (name === 'FAL') return 'https://artlibre.org/licence/lal/en/';
+    if (name === 'KOGL Type 1') return 'https://www.kogl.or.kr/info/licenseType1.do';
+    return null; // Public domain, Attribution, Copyrighted free use: the Commons page explains them
+  }
   function creditHtml(l) {
     const c = l.credit || {};
     let author = (c.author || '').replace(/No machine-readable author provided\.?/i, '').trim();
     if (author.length > 40) author = author.slice(0, 38) + '…';
+    const esc = s => s.replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+    const link = (href, text) => href ? `<a href="${href}" target="_blank" rel="noopener">${esc(text)}</a>` : esc(text);
     const parts = [];
-    if (author) parts.push(author);
-    if (c.license) parts.push(c.license);
-    const text = parts.length ? parts.join(' · ') : 'Wikimedia Commons';
-    return c.page ? `<a href="${c.page}" target="_blank" rel="noopener">${text}</a>` : text;
+    parts.push(link(c.page, author || 'Wikimedia Commons'));
+    if (c.license) parts.push(link(licenseUrl(c.license) || c.page, c.license));
+    return parts.join(' · ');
   }
 
   function flagFor(l) {
