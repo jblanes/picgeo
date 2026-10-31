@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>GeoClick</title>
-  <link rel="stylesheet" href="css/style.css?v=84102461">
+  <link rel="stylesheet" href="css/style.css?v=6a8b3361">
 </head>
 <body>
 <div id="app">
   <aside id="panel">
     <header class="panel-head">
       <div class="brand">GeoClick</div>
-      <div class="status"><span id="round-label">Round 1 / 10</span><span class="sep">·</span><span id="score-label">0 km</span></div>
+      <div class="status"><span id="round-label">Round 1 / 5</span><span class="sep">·</span><span id="score-label">0 km</span></div>
     </header>
     <figure id="photo-box" data-i18n-title="photoTitle" title="Tap to see the picture full screen again; pinch or scroll to zoom">
       <img id="photo" alt="Where is this?">
@@ -19,10 +19,8 @@
     </figure>
     <section id="hint-area">
       <div class="hints">
-        <button class="hint" data-hint="country" data-i18n="hintCountry" data-i18n-title="hintCountryT">🌍 Country</button>
         <button class="hint" data-hint="name" data-i18n="hintName" data-i18n-title="hintNameT">🏷️ Name</button>
         <button class="hint" data-hint="flag" data-i18n="hintFlag" data-i18n-title="hintFlagT">🚩 Flag</button>
-        <button class="hint" data-hint="exact" data-i18n="hintExact" data-i18n-title="hintExactT">📍 Exact</button>
       </div>
       <div id="hint-output"></div>
     </section>
@@ -60,13 +58,13 @@
           <select id="lang"><option value="en">English</option><option value="es">Español</option></select>
         </label>
       </div>
-      <p data-i18n-html="intro1">A picture of a place somewhere on Earth. Press and hold on the globe where you think it is. Every kilometre you are off is added to your score. Ten rounds, from easy to very hard. <strong>Lowest score wins.</strong></p>
-      <p data-i18n="intro2">Four hints per game, each usable once: zoom to the country, the name of the place, the flag, or the exact spot. Once per game, after a bad round, you can cap it at 1,000 km.</p>
+      <p data-i18n-html="intro1">A picture of a place somewhere on Earth. Press and hold on the globe where you think it is. Every kilometre you are off is added to your score. Five rounds, from easy to very hard. <strong>Lowest score wins.</strong></p>
+      <p data-i18n="intro2">Two hints per game, each usable once: the name of the place or the flag of its country. Once per game, after a bad round, you can cap it at 1,000 km.</p>
       <div class="choice">
         <label><input type="radio" name="mode" value="daily" checked> <span data-i18n="modeDaily">Daily game</span></label>
         <label><input type="radio" name="mode" value="free"> <span data-i18n="modeFree">Free play</span></label>
       </div>
-      <p class="muted small" data-i18n="modeHelp">Daily: everyone gets the same ten places today, so totals can be compared. Free play: random places you have not seen yet.</p>
+      <p class="muted small" data-i18n="modeHelp">Daily: everyone gets the same five places today, so totals can be compared. Free play: random places you have not seen yet.</p>
       <p id="daily-done" class="daily-done" hidden></p>
       <div class="choice">
         <label><input type="radio" name="mapstyle" value="satellite" checked> <span data-i18n="satellite">Satellite globe</span></label>
@@ -106,6 +104,6 @@
 <script src="js/storage.js?v=3d79f94b"></script>
 <script src="js/globe-view.js?v=531aa93d"></script>
 <script src="js/photo-viewer.js?v=3d1e81b2"></script>
-<script src="js/game.js?v=ef997af6"></script>
+<script src="js/game.js?v=f4772d16"></script>
 </body>
 </html>

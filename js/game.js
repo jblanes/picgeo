@@ -1,11 +1,11 @@
-// GeoClick game flow: 10 rounds over difficulty 1..5 (two rounds per level), score = km (lower is better),
-// four one-shot hints and a one-shot 1,000 km cap, a daily game shared by everyone and free play,
+// GeoClick game flow: 5 rounds, one per difficulty level 1..5, score = km (lower is better),
+// two one-shot hints (name, flag) and a one-shot 1,000 km cap, a daily game shared by everyone and free play,
 // English or Spanish interface.
 (function () {
-  const ROUNDS = 10;
+  const ROUNDS = 5;
   const LEVELS = 5;
   const CAP_KM = 1000;
-  const levelFor = round => Math.ceil(round / 2); // rounds 1-2 → level 1, 3-4 → 2 … 9-10 → 5
+  const levelFor = round => round; // round 1 → level 1 … round 5 → level 5 (José, 2026-10-31: five rounds)
   const S = window.GeoStorage;
   const POOL = (window.LANDMARKS || []).filter(l => l && l.img && typeof l.lat === 'number' && l.difficulty > 0); // 0 = not yet levelled in the curator
   const photoUrl = l => l.img + (l.rev ? '?v=' + l.rev : ''); // replaced photos keep their file name; the stamp defeats the cache
@@ -13,10 +13,10 @@
   // ---- languages ---------------------------------------------------------------
   const I18N = {
     en: {
-      intro1: 'A picture of a place somewhere on Earth. Press and hold on the globe where you think it is. Every kilometre you are off is added to your score. Ten rounds, from easy to very hard. <strong>Lowest score wins.</strong>',
-      intro2: 'Four hints per game, each usable once: zoom to the country, the name of the place, the flag, or the exact spot. Once per game, after a bad round, you can cap it at 1,000 km.',
+      intro1: 'A picture of a place somewhere on Earth. Press and hold on the globe where you think it is. Every kilometre you are off is added to your score. Five rounds, from easy to very hard. <strong>Lowest score wins.</strong>',
+      intro2: 'Two hints per game, each usable once: the name of the place or the flag of its country. Once per game, after a bad round, you can cap it at 1,000 km.',
       modeDaily: 'Daily game', modeFree: 'Free play',
-      modeHelp: 'Daily: everyone gets the same ten places today, so totals can be compared. Free play: random places you have not seen yet.',
+      modeHelp: 'Daily: everyone gets the same five places today, so totals can be compared. Free play: random places you have not seen yet.',
       dailyDone: "Today's daily game is done: {km} km. Come back tomorrow.",
       satellite: 'Satellite globe', political: 'Political globe',
       tiles: 'Map tiles stream from the internet and stay sharp when you zoom in.',
@@ -46,10 +46,10 @@
       km: 'km',
     },
     es: {
-      intro1: 'Una foto de un lugar del mundo. Mantén pulsado el globo donde creas que está. Cada kilómetro de error se suma a tu puntuación. Diez rondas, de fácil a muy difícil. <strong>Gana la puntuación más baja.</strong>',
-      intro2: 'Cuatro pistas por partida, cada una una sola vez: acercar al país, el nombre del lugar, la bandera o el punto exacto. Una vez por partida, tras una ronda mala, puedes limitarla a 1.000 km.',
+      intro1: 'Una foto de un lugar del mundo. Mantén pulsado el globo donde creas que está. Cada kilómetro de error se suma a tu puntuación. Cinco rondas, de fácil a muy difícil. <strong>Gana la puntuación más baja.</strong>',
+      intro2: 'Dos pistas por partida, cada una una sola vez: el nombre del lugar o la bandera de su país. Una vez por partida, tras una ronda mala, puedes limitarla a 1.000 km.',
       modeDaily: 'Partida del día', modeFree: 'Partida libre',
-      modeHelp: 'Del día: hoy todos reciben los mismos diez lugares, así se comparan los totales. Libre: lugares al azar que aún no has visto.',
+      modeHelp: 'Del día: hoy todos reciben los mismos cinco lugares, así se comparan los totales. Libre: lugares al azar que aún no has visto.',
       dailyDone: 'La partida de hoy ya está hecha: {km} km. Vuelve mañana.',
       satellite: 'Globo satélite', political: 'Globo político',
       tiles: 'Los mapas se descargan de internet y siguen nítidos al acercar.',
@@ -134,17 +134,14 @@
     let a = h >>> 0;
     return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let x = Math.imul(a ^ (a >>> 15), 1 | a); x ^= x + Math.imul(x ^ (x >>> 7), 61 | x); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
   }
-  /** The ten places of the daily game: two per level, drawn from the pool sorted by id with the date as seed. */
+  /** The five places of the daily game: one per level, drawn from the pool sorted by id with the date as seed. */
   function dailyPicks(dateKey) {
     const rand = seeded('geoclick-' + dateKey);
     const picks = [];
     for (let lvl = 1; lvl <= LEVELS; lvl++) {
       const atLevel = POOL.filter(l => l.difficulty === lvl).sort((a, b) => a.id.localeCompare(b.id));
       if (!atLevel.length) continue;
-      const i = Math.floor(rand() * atLevel.length);
-      let j = Math.floor(rand() * Math.max(1, atLevel.length - 1));
-      if (j >= i) j += 1;
-      picks.push(atLevel[i], atLevel[j % atLevel.length]);
+      picks.push(atLevel[Math.floor(rand() * atLevel.length)]);
     }
     return picks;
   }
@@ -344,20 +341,13 @@
     const meta = (window.COUNTRY_META && window.COUNTRY_META[cur.iso3]) || {};
     const line = document.createElement('div');
     line.className = 'hint-line hint-' + kind;
-    if (kind === 'country') {
-      view.flyToCountry(cur.iso3, { lat: cur.lat, lng: cur.lng });
-      line.textContent = t('countryOut');
-    } else if (kind === 'name') {
+    if (kind === 'name') {
       line.innerHTML = `<strong>${cur.place || meta.name || '?'}</strong>`;
     } else if (kind === 'flag') {
       const flag = flagFor(cur);
       line.innerHTML = flag
         ? `<img class="flag" src="${flag}" alt="flag">`
         : `<em>${t('noFlag', { c: meta.name || cur.iso3 })}</em>`;
-    } else if (kind === 'exact') {
-      view.showTruth({ lat: cur.lat, lng: cur.lng }, nameOf(cur));
-      view.flyTo(cur.lat, cur.lng, 0.35, 1200);
-      line.textContent = t('exactOut');
     }
     el.hintOut.appendChild(line);
   }
